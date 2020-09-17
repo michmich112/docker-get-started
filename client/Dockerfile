@@ -4,6 +4,9 @@ LABEL maintainer="https://github.com/michmich112"
 
 WORKDIR /usr/local/client
 
+ARG REACT_APP_BE_URL
+ENV REACT_APP_BE_URL=$REACT_APP_BE_URL
+
 # Not needed
 EXPOSE 3000 
 
@@ -17,5 +20,7 @@ COPY public ./public
 # Install Dependencies
 RUN npm install
 
+RUN npm run build
+
 # Entrypoint: serve the client
-CMD ["npm", "sart"]
+CMD ["npx", "serve", "-s", "build"]

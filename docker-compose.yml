@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+
+  mongo:
+    image: mongo
+    restart: on-failure
+    ports:
+      - "27017:27017"
+    networks:
+      - mongonet
+    volumes:
+      - "/tmp/dockerTest/mongo:/data/db"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+
+  mongo-seed:
+    build:
+      context: ./db-seed
+      dockerfile: Dockerfile
+      args:
+        MONGO_URL: "mongo:27017/"
+        MONGO_USER: root
+        MONGO_PASS: password
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+    restart: on-failure
+    environment:
+      - MONGO_URL=mongo:27017/
+      - MONGO_USER=root
+      - MONGO_PASS=password
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo
+    networks:
+      - mongonet
+    ports:
+      - "4000:3000"
+    restart: on-failure
+    env_file:
+      - ./server/.docker_env
+    # deploy: # only used when deploying to a swarm
+    #   mode: replicated
+    #   replicas: 2 # number of replicas per node
+  
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BE_URL: http://localhost:4000/users
+    depends_on:
+      - mongo
+      - server
+    networks:
+      - mongonet
+    ports:
+      - "3000:5000"
+    restart: on-failure
+
+networks:
+  mongonet:

@@ -20,4 +20,4 @@ COPY routes ./routes
 RUN npm install
 
 # Entrypoint: serve the client
-CMD ["npm", "sart"]
+CMD ["npm", "start"]
